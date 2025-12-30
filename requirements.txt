@@ -1,3 +1,4 @@
 kafka-python-ng
 websockets
 asyncio
+pyspark==3.5.0
