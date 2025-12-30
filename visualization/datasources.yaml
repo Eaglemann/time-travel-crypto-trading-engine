@@ -1,0 +1,5 @@
+databases:
+  - database_name: Trino Crypto
+    sqlalchemy_uri: trino://admin@trino:8080/nessie/crypto
+    expose_in_sqllab: true
+    allow_run_async: false

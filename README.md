@@ -50,29 +50,6 @@ python ingestion/producer.py
 python processing/spark-job.py
 ```
 
-### Initialize Superset (First Time Only)
-Superset requires a one-time database setup. Run these commands inside the container:
-
-1. Create internal DB tables:
-   ```bash
-   docker exec -it superset superset db upgrade
-   ```
-
-2. Create Admin user:
-   ```bash
-   docker exec -it superset superset fab create-admin \
-        --username admin \
-        --firstname Superset \
-        --lastname Admin \
-        --email admin@superset.com \
-        --password admin
-   ```
-
-3. Initialize permissions:
-   ```bash
-   docker exec -it superset superset init
-   ```
-
 ## Usage
 
 ### Accessing the Dashboard

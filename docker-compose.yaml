@@ -30,15 +30,37 @@ services:
 
   
   minio:
-    image: minio/minio:latest
+    image: minio/minio
     container_name: minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - data-mesh
+
+  # 2. The Sidecar to Create the Bucket (Corrected Command)
+  minio-init:
+    image: minio/mc
+    container_name: minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 admin password;
+      /usr/bin/mc mb myminio/lake-bucket --ignore-existing;
+      /usr/bin/mc anonymous set public myminio/lake-bucket;
+      exit 0;
+      "
     networks:
       - data-mesh
     
@@ -69,10 +91,15 @@ services:
     ports:
       - "8088:8088"
     environment:
-      - SUPERSET_SECRET_KEY= "7a25fb5b-26b2-4bb9-aeb6-e6c8a334b983"
+      SUPERSET_SECRET_KEY: "my-secret-key-change-me"
+    volumes:
+      - superset_home:/app/superset_home
     networks:
       - data-mesh
 
 networks:
   data-mesh:
     driver: bridge
+
+volumes:
+  superset_home:
