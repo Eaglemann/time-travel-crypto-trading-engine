@@ -53,6 +53,16 @@ services:
     networks:
       - data-mesh
 
+  trino:
+    image: trinodb/trino:latest
+    container_name: trino
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./warehouse/trino-config:/etc/trino/catalog
+    networks:
+      - data-mesh
+
 networks:
   data-mesh:
     driver: bridge

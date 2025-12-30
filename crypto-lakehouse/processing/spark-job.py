@@ -57,11 +57,14 @@ df_parsed = df_kafka.select(from_json(col("value").cast("string"), schema).alias
 
 # Write to Iceberg (Nessie catalog)
 try:
+
+    spark.sql("CREATE NAMESPACE IF NOT EXISTS nessie.crypto")
+    
     query = df_parsed.writeStream \
         .format("iceberg") \
         .trigger(processingTime="5 seconds") \
         .option("checkpointLocation", "./checkpoint_dir") \
-        .toTable("nessie.binance_trades")
+        .toTable("nessie.crypto.binance_trades")
 
     logging.info("Spark job started, writing to Iceberg table 'nessie.binance_trades'.")
     query.awaitTermination()
