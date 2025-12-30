@@ -63,6 +63,16 @@ services:
     networks:
       - data-mesh
 
+  superset:
+    build: ./visualization
+    container_name: superset
+    ports:
+      - "8088:8088"
+    environment:
+      - SUPERSET_SECRET_KEY= "7a25fb5b-26b2-4bb9-aeb6-e6c8a334b983"
+    networks:
+      - data-mesh
+
 networks:
   data-mesh:
     driver: bridge
