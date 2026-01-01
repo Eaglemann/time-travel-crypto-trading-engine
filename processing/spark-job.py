@@ -7,6 +7,11 @@ import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO)
 
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 PACKAGES = [
     "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0",
     "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.4.3",
@@ -15,20 +20,20 @@ PACKAGES = [
 ]
 
 spark = SparkSession.builder \
-    .appName("BinanceToIceberg") \
+    .appName(os.getenv("SPARK_APP_NAME", "BinanceToIceberg")) \
     .config("spark.jars.packages", ",".join(PACKAGES)) \
-    .config("spark.driver.memory", "4g") \
+    .config("spark.driver.memory", os.getenv("SPARK_DRIVER_MEMORY", "4g")) \
     .config("spark.sql.extensions", "org.projectnessie.spark.extensions.NessieSparkSessionExtensions,org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
     .config("spark.sql.catalog.nessie", "org.apache.iceberg.spark.SparkCatalog") \
     .config("spark.sql.catalog.nessie.catalog-impl", "org.apache.iceberg.nessie.NessieCatalog") \
-    .config("spark.sql.catalog.nessie.uri", "http://localhost:19120/api/v1") \
+    .config("spark.sql.catalog.nessie.uri", os.getenv("NESSIE_URI", "http://localhost:19120/api/v1")) \
     .config("spark.sql.catalog.nessie.ref", "main") \
     .config("spark.sql.catalog.nessie.authentication.type", "NONE") \
-    .config("spark.sql.catalog.nessie.warehouse", "s3a://lake-bucket") \
-    .config("spark.sql.catalog.nessie.s3.endpoint", "http://localhost:9000") \
-    .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000") \
-    .config("spark.hadoop.fs.s3a.access.key", "admin") \
-    .config("spark.hadoop.fs.s3a.secret.key", "password") \
+    .config("spark.sql.catalog.nessie.warehouse", f"s3a://{os.getenv('MINIO_BUCKET_NAME', 'lake-bucket')}") \
+    .config("spark.sql.catalog.nessie.s3.endpoint", os.getenv("S3_ENDPOINT_HOST", "http://localhost:9000")) \
+    .config("spark.hadoop.fs.s3a.endpoint", os.getenv("S3_ENDPOINT_HOST", "http://localhost:9000")) \
+    .config("spark.hadoop.fs.s3a.access.key", os.getenv("MINIO_ROOT_USER", "admin")) \
+    .config("spark.hadoop.fs.s3a.secret.key", os.getenv("MINIO_ROOT_PASSWORD", "password")) \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
@@ -48,8 +53,8 @@ schema = StructType([
 # Read from Kafka
 df_kafka = spark.readStream \
     .format("kafka") \
-    .option("kafka.bootstrap.servers", "localhost:9092") \
-    .option("subscribe", "crypto_trades") \
+    .option("kafka.bootstrap.servers", os.getenv("KAFKA_BOOTSTRAP_SERVER", "localhost:9092")) \
+    .option("subscribe", os.getenv("KAFKA_TOPIC", "crypto_trades")) \
     .option("startingOffsets", "earliest") \
     .load()
 

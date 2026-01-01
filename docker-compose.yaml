@@ -33,11 +33,13 @@ services:
     image: minio/minio
     container_name: minio
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "9000:9000"
       - "9001:9001"
+    volumes:
+      - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -56,9 +58,9 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 admin password;
-      /usr/bin/mc mb myminio/lake-bucket --ignore-existing;
-      /usr/bin/mc anonymous set public myminio/lake-bucket;
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/${MINIO_BUCKET_NAME} --ignore-existing;
+      /usr/bin/mc anonymous set public myminio/${MINIO_BUCKET_NAME};
       exit 0;
       "
     networks:
@@ -72,6 +74,8 @@ services:
       - "19120:19120"
     environment:
       QUARKUS_DATASOURCE_DB_KIND: other
+    volumes:
+      - nessie_data:/var/lib/nessie/data
     networks:
       - data-mesh
 
@@ -91,7 +95,12 @@ services:
     ports:
       - "8088:8088"
     environment:
-      SUPERSET_SECRET_KEY: "my-secret-key-change-me"
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL}
+      SUPERSET_ADMIN_FIRSTNAME: ${SUPERSET_ADMIN_FIRSTNAME}
+      SUPERSET_ADMIN_LASTNAME: ${SUPERSET_ADMIN_LASTNAME}
     volumes:
       - superset_home:/app/superset_home
     networks:
@@ -103,3 +112,8 @@ networks:
 
 volumes:
   superset_home:
+  minio_data:
+  nessie_data:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:

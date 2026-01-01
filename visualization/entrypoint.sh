@@ -14,11 +14,11 @@ if ! superset fab list-users | grep -q "admin"; then
     
     echo "2. Creating Admin User..."
     superset fab create-admin \
-        --username admin \
-        --firstname Superset \
-        --lastname Admin \
-        --email admin@superset.com \
-        --password admin
+        --username "${SUPERSET_ADMIN_USERNAME:-admin}" \
+        --firstname "${SUPERSET_ADMIN_FIRSTNAME:-Superset}" \
+        --lastname "${SUPERSET_ADMIN_LASTNAME:-Admin}" \
+        --email "${SUPERSET_ADMIN_EMAIL:-admin@superset.com}" \
+        --password "${SUPERSET_ADMIN_PASSWORD:-admin}"
     
     echo "3. Initializing Roles..."
     superset init

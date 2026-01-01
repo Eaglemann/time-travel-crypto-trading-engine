@@ -5,10 +5,16 @@ from kafka import KafkaProducer
 import websockets
 
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 # Config
-KAFKA_TOPIC = "crypto_trades"
-KAFKA_BOOTSTRAP = "localhost:9092"
-BINANCE_WS = "wss://stream.binance.com:9443/ws/btcusdt@aggTrade"
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "crypto_trades")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVER", "localhost:9092")
+BINANCE_WS = os.getenv("BINANCE_WS_URL", "wss://stream.binance.com:9443/ws/btcusdt@aggTrade")
 
 # Configure logging
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO)
