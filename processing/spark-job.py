@@ -17,6 +17,7 @@ PACKAGES = [
 spark = SparkSession.builder \
     .appName("BinanceToIceberg") \
     .config("spark.jars.packages", ",".join(PACKAGES)) \
+    .config("spark.driver.memory", "4g") \
     .config("spark.sql.extensions", "org.projectnessie.spark.extensions.NessieSparkSessionExtensions,org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
     .config("spark.sql.catalog.nessie", "org.apache.iceberg.spark.SparkCatalog") \
     .config("spark.sql.catalog.nessie.catalog-impl", "org.apache.iceberg.nessie.NessieCatalog") \
